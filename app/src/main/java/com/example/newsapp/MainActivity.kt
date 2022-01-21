@@ -1,15 +1,17 @@
 package com.example.newsapp
 
 import android.Manifest
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Geocoder
-import android.location.Location
-import android.location.LocationManager
+import android.location.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.widget.Button
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
@@ -17,6 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.newsapp.databinding.ActivityMainBinding
 import com.example.newsapp.models.Item
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
@@ -25,6 +29,9 @@ import java.net.URL
 import java.util.*
 import java.util.concurrent.Executors
 
+private const val FEED_WORLD_URL = "https://feeds.skynews.com/feeds/rss/world.xml"
+private const val FEED_US_URL = "https://feeds.skynews.com/feeds/rss/us.xml"
+
 class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener {
 
 
@@ -32,52 +39,48 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
     private val myExecutor = Executors.newSingleThreadExecutor()
     private val myHandler = Handler(Looper.getMainLooper())
     private lateinit var rvNews: RecyclerView
-    private val FEED_WORLD_URL = "https://feeds.skynews.com/feeds/rss/world.xml"
-    private val FEED_US_URL = "https://feeds.skynews.com/feeds/rss/us.xml"
     private lateinit var items: MutableList<Item>
-    private var location: Location? = null
-    private var gpsLocation: Location? = null
-    private var networkLocation: Location? = null
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
     private var latitude: Double? = null
     private var longitude: Double? = null
-    private var userCountryCode: String? = null
+
+    private lateinit var userCountryCode: String
+
+
     private lateinit var tvId: TextView
     private lateinit var tvEmail: TextView
-    private lateinit var btnlogOut: Button
-
+    private lateinit var btnLogOut: Button
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        rvNews = binding.rvNews
-        items = mutableListOf()
 
         val userId = intent.getStringExtra("userId")
         val emailId = intent.getStringExtra("emailId")
 
+        rvNews = binding.rvNews
+        items = mutableListOf()
         tvId = binding.tvUserId
         tvEmail = binding.tvUserEmail
         tvId.text = userId
         tvEmail.text = emailId
+        btnLogOut = binding.btnLogOut
 
-        btnlogOut = binding.btnLogOut
-
-        btnlogOut.setOnClickListener(){
+        btnLogOut.setOnClickListener() {
             FirebaseAuth.getInstance().signOut()
-            val intent = Intent(this,LoginActivity::class.java)
+            val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
             finish()
         }
-        findCountryCode()
+        userCountryCode = findCountryCode()
         parseDataInBackground()
-
-
     }
 
-    private fun findCountryCode() {
-        val locationManager = getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
+    private fun findCountryCode(): String {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -87,33 +90,35 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            return;
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                ),
+                1
+            )
         }
-        gpsLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location: Location? ->
+                latitude = location?.latitude
+                longitude = location?.longitude
+            }
 
-        if (gpsLocation != null) {
-            location = gpsLocation
-            longitude = location!!.longitude
-            latitude = location!!.latitude
+        val geocoder = Geocoder(this, Locale.getDefault())
+        val addresses: MutableList<Address>
+        if (latitude != null && longitude != null) {
+            addresses = geocoder.getFromLocation(latitude!!, longitude!!, 1)
         } else {
             latitude = 0.0
             longitude = 0.0
+            addresses = geocoder.getFromLocation(latitude!!, longitude!!, 1)
         }
-
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-            ),
-            1
-        )
-        val geocoder = Geocoder(this, Locale.getDefault())
-        val addresses = geocoder.getFromLocation(latitude!!, longitude!!, 1)
         if (!addresses.isNullOrEmpty()) {
-            userCountryCode = addresses[0].countryCode
-        }else{
-            userCountryCode = "Unknown"
+            return addresses[0].countryCode
+        } else {
+            return "Unknown"
         }
     }
 
@@ -131,28 +136,23 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
             val xmlParser = factory.newPullParser()
 
             println(userCountryCode)
-            if(userCountryCode =="USA"){
-
+            if (userCountryCode == "US") {
                 xmlParser.setInput(downloadUrl(FEED_US_URL), "UTF_8")
-            }else{
+            } else {
                 xmlParser.setInput(downloadUrl(FEED_WORLD_URL), "UTF_8")
             }
 
             var insideItem = false
-
             var eventType = xmlParser.eventType
-
             var title: String? = null
             var img: String? = null
             var description: String? = null
             var link: String? = null
             while (eventType != XmlPullParser.END_DOCUMENT) {
 
-
                 if (eventType == XmlPullParser.START_TAG) {
                     if (xmlParser.name.equals("item")) {
                         insideItem = true
-
                     } else if (xmlParser.name.equals("title") && insideItem) {
                         title = xmlParser.nextText()
                     } else if (xmlParser.name.equals("media:content") && insideItem) {
@@ -174,14 +174,12 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
                 }
                 eventType = xmlParser.next()
             }
-
             myHandler.post {
                 val adapter = RecyclerAdapter(items, this)
                 rvNews.adapter = adapter
                 rvNews.layoutManager = LinearLayoutManager(this)
                 rvNews.setHasFixedSize(true)
             }
-
         }
     }
 
@@ -192,6 +190,5 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
         clickedItem.state = "READ"
         rvNews.adapter!!.notifyItemChanged(position)
         startActivity(intent)
-
     }
 }

@@ -6,12 +6,14 @@ import android.graphics.ColorMatrixColorFilter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.newsapp.models.Item
+import com.google.firebase.ktx.Firebase
 
 class RecyclerAdapter (private val itemsList: List<Item>,
                        private val clickListener: OnItemClickedListener
@@ -54,6 +56,9 @@ class RecyclerAdapter (private val itemsList: List<Item>,
         val img: ImageView = itemView.findViewById(R.id.item_image)
         val description: TextView = itemView.findViewById((R.id.item_description))
         val layoutItem: LinearLayout = itemView.findViewById((R.id.layout_item))
+        val btnFavourite: ImageButton
+        val favouriteDbRef:DatabaseReference
+        val db: Firebase.firest
 
         init {
             itemView.setOnClickListener(this)
