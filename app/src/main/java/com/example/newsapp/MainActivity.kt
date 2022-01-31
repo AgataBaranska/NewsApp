@@ -22,6 +22,7 @@ import com.example.newsapp.models.Item
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.CollectionReference
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.InputStream
@@ -47,11 +48,12 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
     private var longitude: Double? = null
 
     private lateinit var userCountryCode: String
+    private lateinit var userName:TextView
 
-
-    private lateinit var tvId: TextView
-    private lateinit var tvEmail: TextView
     private lateinit var btnLogOut: Button
+
+    private lateinit var firestore:FirestoreClass
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,15 +61,14 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val userId = intent.getStringExtra("userId")
-        val emailId = intent.getStringExtra("emailId")
+        firestore = FirestoreClass()
+
+       userName = binding.tvUserName
+        userName.text = firestore.getUserName(firestore.getCurrentUserId())
 
         rvNews = binding.rvNews
         items = mutableListOf()
-        tvId = binding.tvUserId
-        tvEmail = binding.tvUserEmail
-        tvId.text = userId
-        tvEmail.text = emailId
+
         btnLogOut = binding.btnLogOut
 
         btnLogOut.setOnClickListener() {
@@ -79,6 +80,7 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
         userCountryCode = findCountryCode()
         parseDataInBackground()
     }
+
 
     private fun findCountryCode(): String {
         if (ActivityCompat.checkSelfPermission(
@@ -164,7 +166,7 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
                     }
 
                 } else if (eventType == XmlPullParser.END_TAG && xmlParser.name.equals("item")) {
-                    val item = Item(title, img, description, link, "UNREAD")
+                    val item = Item(title, img, description, link, "UNREAD", false)
                     items.add(item)
                     insideItem = false
                     link = null
@@ -175,12 +177,26 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
                 eventType = xmlParser.next()
             }
             myHandler.post {
+                //check which item is in favouritesList
+                checkIfInFavourites()
                 val adapter = RecyclerAdapter(items, this)
                 rvNews.adapter = adapter
                 rvNews.layoutManager = LinearLayoutManager(this)
                 rvNews.setHasFixedSize(true)
             }
         }
+    }
+
+    fun checkIfInFavourites() {
+        val favourites = firestore.getUserFavouritesList(firestore.getCurrentUserId())
+        for(i in items){
+            for(f in favourites){
+                if(i.link.equals(f.link)){
+                    i.favourite = true
+                }
+            }
+        }
+
     }
 
     override fun onItemClicked(position: Int) {

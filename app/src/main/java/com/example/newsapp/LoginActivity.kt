@@ -21,6 +21,7 @@ import com.facebook.FacebookCallback
 import android.content.ContentValues.TAG
 import android.util.Log
 import android.view.View
+import com.example.newsapp.models.User
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
 import com.google.firebase.auth.FacebookAuthProvider
@@ -182,5 +183,13 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
                         }
                     })
         }}
+
+    fun userDataSuccess(user: User) {
+        Log.i("id", user.id)
+
+        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+        finish()
+
+    }
 
 }

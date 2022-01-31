@@ -8,14 +8,16 @@ data class Item (
     val image:String?,
     val description: String?,
     val link: String?,
-    var state: String?
+    var state: String?,
+    var favourite:Boolean
 ): Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
-        parcel.readString()
+        parcel.readString(),
+        parcel.readValue(Boolean::class.java.classLoader) as Boolean
     ) {
     }
 
@@ -29,6 +31,7 @@ data class Item (
         parcel.writeString(description)
         parcel.writeString(link)
         parcel.writeString(state)
+        parcel.writeInt(if(favourite) 1 else 0)
     }
 
     companion object CREATOR : Parcelable.Creator<Item> {

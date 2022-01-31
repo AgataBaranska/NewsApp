@@ -13,6 +13,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.newsapp.models.Item
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 
 class RecyclerAdapter (private val itemsList: List<Item>,
@@ -26,6 +29,7 @@ class RecyclerAdapter (private val itemsList: List<Item>,
 
     override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
         val currentItem = itemsList[position]
+
         holder.title.text = currentItem.title
         if (currentItem.image == null) {
             holder.img.setImageResource(R.drawable.image_placeholder)
@@ -43,6 +47,8 @@ class RecyclerAdapter (private val itemsList: List<Item>,
             holder.layoutItem.setBackgroundResource( R.drawable.bg_unread_item)
 
         }
+
+
     }
 
     override fun getItemCount(): Int {
@@ -56,9 +62,6 @@ class RecyclerAdapter (private val itemsList: List<Item>,
         val img: ImageView = itemView.findViewById(R.id.item_image)
         val description: TextView = itemView.findViewById((R.id.item_description))
         val layoutItem: LinearLayout = itemView.findViewById((R.id.layout_item))
-        val btnFavourite: ImageButton
-        val favouriteDbRef:DatabaseReference
-        val db: Firebase.firest
 
         init {
             itemView.setOnClickListener(this)

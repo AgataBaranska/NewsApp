@@ -1,6 +1,7 @@
 package com.example.newsapp.models
 
-class User {
+class User (
+    val id: String = "",
+    val name:String = "",
 
-    
-}
+)

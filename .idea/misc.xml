@@ -5,13 +5,14 @@
       <map>
         <entry key="..\:/Users/baran/AndroidStudioProjects/NewsApp/app/src/main/res/drawable/bg_read_item.xml" value="0.2328125" />
         <entry key="..\:/Users/baran/AndroidStudioProjects/NewsApp/app/src/main/res/drawable/bg_unread_item.xml" value="0.2328125" />
+        <entry key="..\:/Users/baran/AndroidStudioProjects/NewsApp/app/src/main/res/drawable/ic_favorite_fill.xml" value="0.17777777777777778" />
         <entry key="..\:/Users/baran/AndroidStudioProjects/NewsApp/app/src/main/res/drawable/image_placeholder.xml" value="0.2328125" />
         <entry key="..\:/Users/baran/AndroidStudioProjects/NewsApp/app/src/main/res/layout/activity_forgot_password.xml" value="0.21822916666666667" />
         <entry key="..\:/Users/baran/AndroidStudioProjects/NewsApp/app/src/main/res/layout/activity_full_article.xml" value="0.18931159420289856" />
         <entry key="..\:/Users/baran/AndroidStudioProjects/NewsApp/app/src/main/res/layout/activity_login.xml" value="0.4" />
         <entry key="..\:/Users/baran/AndroidStudioProjects/NewsApp/app/src/main/res/layout/activity_main.xml" value="0.18931159420289856" />
         <entry key="..\:/Users/baran/AndroidStudioProjects/NewsApp/app/src/main/res/layout/activity_register.xml" value="0.18931159420289856" />
-        <entry key="..\:/Users/baran/AndroidStudioProjects/NewsApp/app/src/main/res/layout/item.xml" value="0.18931159420289856" />
+        <entry key="..\:/Users/baran/AndroidStudioProjects/NewsApp/app/src/main/res/layout/item.xml" value="0.6" />
       </map>
     </option>
   </component>

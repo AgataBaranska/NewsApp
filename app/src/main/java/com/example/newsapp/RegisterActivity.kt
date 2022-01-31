@@ -9,6 +9,8 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import com.example.newsapp.databinding.ActivityRegisterBinding
+import com.example.newsapp.models.Item
+import com.example.newsapp.models.User
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -18,6 +20,7 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var btnRegister: Button
     private lateinit var etRegisterEmail: EditText
     private lateinit var etRegisterPassword: EditText
+    private lateinit var etRegisterName:EditText
     private lateinit var tvLogin: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,6 +32,7 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener {
         btnRegister.setOnClickListener(this)
         etRegisterEmail = binding.etRegisterEmail
         etRegisterPassword = binding.etRegisterPassword
+        etRegisterName = binding.etRegisterName
         tvLogin = binding.tvLogin
         tvLogin.setOnClickListener(this)
     }
@@ -48,43 +52,41 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun validateRegisterDetails(): Boolean {
-        if (etRegisterEmail.text.toString().trim().isNullOrEmpty()) {
-            Toast.makeText(this@RegisterActivity, "Please enter email", Toast.LENGTH_SHORT)
-                .show()
-            return false
+        when {
+            etRegisterName.text.toString().trim().isEmpty() -> {
+                Toast.makeText(this@RegisterActivity, "Please enter name", Toast.LENGTH_SHORT)
+                    .show()
+                return false
+            }
+            etRegisterEmail.text.toString().trim().isNullOrEmpty() -> {
+                Toast.makeText(this@RegisterActivity, "Please enter email", Toast.LENGTH_SHORT)
+                    .show()
+                return false
 
-        } else if (etRegisterPassword.text.toString().trim().isEmpty()) {
+            }
+            etRegisterPassword.text.toString().trim().isEmpty() -> {
 
-            Toast.makeText(this@RegisterActivity, "Please enter password", Toast.LENGTH_SHORT)
-                .show()
-            return false
+                Toast.makeText(this@RegisterActivity, "Please enter password", Toast.LENGTH_SHORT)
+                    .show()
+                return false
+            }
+            else -> return true
         }
-        return true
     }
 
     private fun registerUser() {
         if (validateRegisterDetails()) {
             val email = etRegisterEmail.text.toString().trim()
             val password = etRegisterPassword.text.toString().trim()
+            val name = etRegisterName.text.toString().trim()
 
             FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(
                     OnCompleteListener { task ->
                         if (task.isSuccessful) {
                             val firebaseUser: FirebaseUser = task.result!!.user!!
-                            Toast.makeText(
-                                this@RegisterActivity,
-                                "You were registered successfully!", Toast.LENGTH_SHORT
-                            ).show()
-
-                            val intent =
-                                Intent(this@RegisterActivity, MainActivity::class.java)
-                            intent.flags =
-                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            intent.putExtra("userId", firebaseUser.uid)
-                            intent.putExtra("emailId", email)
-                            startActivity(intent)
-                            finish()
+                            val user = User(firebaseUser.uid, name)
+                            FirestoreClass().registerUser(this,user)
 
                         } else {
                             Toast.makeText(
@@ -94,7 +96,20 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener {
                             ).show()
                         }
                     })
-
         }
+    }
+
+    fun userRegisterSuccess(){
+        Toast.makeText(
+            this@RegisterActivity,
+            "You were registered successfully!", Toast.LENGTH_SHORT
+        ).show()
+
+        val intent =
+            Intent(this@RegisterActivity, MainActivity::class.java)
+        intent.flags =
+            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }
