@@ -166,7 +166,7 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
                     }
 
                 } else if (eventType == XmlPullParser.END_TAG && xmlParser.name.equals("item")) {
-                    val item = Item(title, img, description, link, "UNREAD", false)
+                    val item = Item(title, img, description, link, "UNREAD")
                     items.add(item)
                     insideItem = false
                     link = null
@@ -178,7 +178,6 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
             }
             myHandler.post {
                 //check which item is in favouritesList
-                checkIfInFavourites()
                 val adapter = RecyclerAdapter(items, this)
                 rvNews.adapter = adapter
                 rvNews.layoutManager = LinearLayoutManager(this)
@@ -187,17 +186,7 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
         }
     }
 
-    fun checkIfInFavourites() {
-        val favourites = firestore.getUserFavouritesList(firestore.getCurrentUserId())
-        for(i in items){
-            for(f in favourites){
-                if(i.link.equals(f.link)){
-                    i.favourite = true
-                }
-            }
-        }
 
-    }
 
     override fun onItemClicked(position: Int) {
         val clickedItem = items[position]

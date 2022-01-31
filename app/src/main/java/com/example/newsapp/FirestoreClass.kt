@@ -54,7 +54,7 @@ class FirestoreClass {
             userName = user?.name.toString()
 
         }.addOnFailureListener {
-            Log.i("grtUserName", "Failure")
+            Log.i("getUserName", "Failure")
         }
         return userName
     }

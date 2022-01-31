@@ -31,7 +31,6 @@ import java.util.*
 class LoginActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var etLoginPassword: EditText
     private lateinit var binding: ActivityLoginBinding
-
     private lateinit var tvRegister: TextView
     private lateinit var btnLogin: Button
     private lateinit var etLoginEmail: EditText
@@ -181,15 +180,8 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-                    })
-        }}
+                    }) }}
 
-    fun userDataSuccess(user: User) {
-        Log.i("id", user.id)
 
-        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-        finish()
-
-    }
 
 }
