@@ -1,9 +1,6 @@
-package com.example.newsapp
+package com.example.newsapp.activities
 
 import android.Manifest
-import android.app.AlertDialog
-import android.app.Dialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.*
@@ -11,18 +8,19 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.Settings
 import android.widget.Button
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.newsapp.FirestoreClass
+import com.example.newsapp.RecyclerAdapter
 import com.example.newsapp.databinding.ActivityMainBinding
 import com.example.newsapp.models.Item
+import com.example.newsapp.models.User
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.CollectionReference
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.InputStream
@@ -48,12 +46,13 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
     private var longitude: Double? = null
 
     private lateinit var userCountryCode: String
-    private lateinit var userName:TextView
+    private lateinit var userName: TextView
 
     private lateinit var btnLogOut: Button
+    private lateinit var btnFavourites: Button
 
-    private lateinit var firestore:FirestoreClass
-
+    private lateinit var firestore: FirestoreClass
+    private lateinit var currentUser: User
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,23 +61,30 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
         setContentView(binding.root)
 
         firestore = FirestoreClass()
-
-       userName = binding.tvUserName
-        userName.text = firestore.getUserName(firestore.getCurrentUserId())
-
+        firestore.getCurrentUserData(this)
+        firestore.getUserReadArticles(this)
+        userName = binding.tvUserName
         rvNews = binding.rvNews
         items = mutableListOf()
-
         btnLogOut = binding.btnLogOut
-
         btnLogOut.setOnClickListener() {
             FirebaseAuth.getInstance().signOut()
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
             finish()
         }
+        btnFavourites = binding.btnFavourites
+        btnFavourites.setOnClickListener() {
+            startActivity(Intent(this, FavouriteArticlesActivity::class.java))
+        }
+
+    }
+
+    override fun onStart() {
+        super.onStart()
         userCountryCode = findCountryCode()
         parseDataInBackground()
+
     }
 
 
@@ -177,7 +183,6 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
                 eventType = xmlParser.next()
             }
             myHandler.post {
-                //check which item is in favouritesList
                 val adapter = RecyclerAdapter(items, this)
                 rvNews.adapter = adapter
                 rvNews.layoutManager = LinearLayoutManager(this)
@@ -187,13 +192,30 @@ class MainActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickedListener 
     }
 
 
-
     override fun onItemClicked(position: Int) {
         val clickedItem = items[position]
         val intent = Intent(this, FullArticleActivity::class.java)
         intent.putExtra("selectedItem", clickedItem)
         clickedItem.state = "READ"
+        firestore.addArticleToRead(clickedItem)
         rvNews.adapter!!.notifyItemChanged(position)
         startActivity(intent)
+    }
+
+    fun setUserData(user: User) {
+        currentUser = user
+        userName.text = currentUser.name
+    }
+
+    fun setReadArticles(userReadArticles: List<Item>) {
+        for (item in items) {
+            for (readItem in userReadArticles) {
+                if (item.link.equals(readItem.link)) {
+                    item.state = "READ"
+                    rvNews.adapter!!.notifyItemChanged(items.indexOf(item))
+                }
+            }
+        }
+
     }
 }

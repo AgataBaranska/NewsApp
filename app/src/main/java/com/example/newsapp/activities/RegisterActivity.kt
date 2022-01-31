@@ -1,4 +1,4 @@
-package com.example.newsapp
+package com.example.newsapp.activities
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -8,8 +8,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import com.example.newsapp.FirestoreClass
 import com.example.newsapp.databinding.ActivityRegisterBinding
-import com.example.newsapp.models.Item
 import com.example.newsapp.models.User
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
@@ -20,7 +20,7 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var btnRegister: Button
     private lateinit var etRegisterEmail: EditText
     private lateinit var etRegisterPassword: EditText
-    private lateinit var etRegisterName:EditText
+    private lateinit var etRegisterName: EditText
     private lateinit var tvLogin: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +43,7 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener {
                 binding.btnRegister.id -> {
                     registerUser()
                 }
-                binding.tvLogin.id ->{
+                binding.tvLogin.id -> {
                     onBackPressed()
                     finish()
                 }
@@ -86,7 +86,7 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener {
                         if (task.isSuccessful) {
                             val firebaseUser: FirebaseUser = task.result!!.user!!
                             val user = User(firebaseUser.uid, name)
-                            FirestoreClass().registerUser(this,user)
+                            FirestoreClass().registerUser(this, user)
 
                         } else {
                             Toast.makeText(
@@ -99,7 +99,7 @@ class RegisterActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    fun userRegisterSuccess(){
+    fun userRegisterSuccess() {
         Toast.makeText(
             this@RegisterActivity,
             "You were registered successfully!", Toast.LENGTH_SHORT

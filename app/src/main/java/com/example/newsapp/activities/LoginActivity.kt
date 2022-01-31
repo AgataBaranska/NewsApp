@@ -1,4 +1,4 @@
-package com.example.newsapp
+package com.example.newsapp.activities
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -21,7 +21,6 @@ import com.facebook.FacebookCallback
 import android.content.ContentValues.TAG
 import android.util.Log
 import android.view.View
-import com.example.newsapp.models.User
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
 import com.google.firebase.auth.FacebookAuthProvider
@@ -35,7 +34,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var btnLogin: Button
     private lateinit var etLoginEmail: EditText
     private lateinit var btnLoginFacebook: LoginButton
-    private lateinit var tvForgotPassword:TextView
+    private lateinit var tvForgotPassword: TextView
     private lateinit var callbackManager: CallbackManager
     private lateinit var auth: FirebaseAuth
 
@@ -106,10 +105,10 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
 
     public override fun onStart() {
         super.onStart()
-        val currentUser = auth.currentUser
-        if(currentUser!=null){
-            updateUI(currentUser)
-        }
+//        val currentUser = auth.currentUser
+//        if(currentUser!=null){
+//            updateUI(currentUser)
+//        }
     }
 
     private fun updateUI(user: FirebaseUser?) {
@@ -124,12 +123,12 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
             when (view.id) {
 
                 binding.btnLogIn.id -> {
-                  loginUser()
+                    loginUser()
                 }
                 binding.tvRegister.id -> {
                     startActivity(Intent(this@LoginActivity, RegisterActivity::class.java))
                 }
-                binding.tvForgotPassword.id ->{
+                binding.tvForgotPassword.id -> {
                     startActivity(Intent(this@LoginActivity, ForgotPasswordActivity::class.java))
                 }
             }
@@ -149,8 +148,8 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
         return true
     }
 
-    private fun loginUser(){
-        if(validateLoginDetails()){
+    private fun loginUser() {
+        if (validateLoginDetails()) {
             val email = etLoginEmail.text.toString().trim()
             val password = etLoginPassword.text.toString().trim()
 
@@ -180,8 +179,9 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-                    }) }}
-
+                    })
+        }
+    }
 
 
 }

@@ -48,7 +48,6 @@ class RecyclerAdapter (private val itemsList: List<Item>,
 
         }
 
-
     }
 
     override fun getItemCount(): Int {
